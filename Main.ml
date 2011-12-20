@@ -1,14 +1,15 @@
 #use "PRI_QUE_AVL.ml";;
 #use "MAP_AVL.ml";;
-#use "DIJKSTRA.ml";;
+#use "SHORTEST_PATH.ml";;
 
 open Scanf;;
 open Printf;;
 
 module GraphIntIntList = AVL_MAP(IntIntListOrderTuple);;
 module IntAvl = AVL(IntOrder);;
-module DijkstraAlgorithm = DIJKSTRA(AVL)(AVL_MAP);;
 module IntAvlMap = AVL_MAP(IntIntOrderTuple);;
+module DijkstraAlgorithm = DIJKSTRA(AVL)(AVL_MAP);;
+module BellmanFordAlgorithm = BELLMAN_FORD(AVL_MAP);;
 
 let build_graph nodes edges =
     let graph_first_step = 
