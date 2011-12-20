@@ -110,6 +110,23 @@ let tests = [
             (2, 4, 10, 1);
             (3, 4, 10, 1)
         ], 2
+    );
+    (
+        [1;2;3;4;5;6],
+        [
+            (1, 2, 10, 1);
+            (1, 3, 10, 3);
+            (1, 4, 10, 2);
+            (4, 3, 10, 2);
+            (2, 5, 10, 3);
+            (2, 6, 10, 5);
+            (3, 5, 10, 2);
+            (4, 5, 10, 1);
+            (3, 6, 10, 7);
+            (4, 6, 10, 4);
+            (5, 6, 10, 2);
+            (2, 3, 10, 1);
+        ], 5
     )]
 
 let test_shortest_paths =
@@ -120,11 +137,15 @@ let test_shortest_paths =
             let dist_to_last_dij = IntAvlMap.get_keys_value dists_dij (IntAvlMap.get_max_key dists_dij) in
             let (dists_bell, parent_bell) = BellmanFordAlgorithm.get_the_shortest_path graph 1 in
             let dist_to_last_bell = IntAvlMap.get_keys_value dists_bell (IntAvlMap.get_max_key dists_bell) in
+                (*printf "Parent:\n";
+                List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print parent_dij);
+                printf "\nDists:\n";
+                List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print dists_dij);*)
                 printf "Test %d: " i;
                 assert (dist_to_last_dij == correct_answer && dist_to_last_bell == correct_answer);
                 printf "OK\n";
                 (i+1)
-    ) 0 tests;;
+    ) 1 tests;;
 
 (*
 let test_avl1 () =
