@@ -91,7 +91,21 @@ module BELLMAN_FORD : SHORTEST_PATH_FINDER =
                     (dists, parent)
                 else
                     let (new_dists, new_parent) = List.fold_left(
-                    ) ............ TODO ...........
+                        fun (dists_u, parent_u) ((u, neighbours), _, _) ->
+                            List.fold_left(
+                                fun (ndist, nparent) (v, cap, cost) ->
+                                    let act_cost = (IntIntAvlMap.get_keys_value ndist u) + cost in
+                                    let old_cost = IntIntAvlMap.get_keys_value ndist v in
+                                    if act_cost < old_cost then
+                                        let nndist = IntIntAvlMap.put ndist (v, act_cost) in
+                                        let nnparent = IntIntAvlMap.put nparent (v, u) in
+                                        (nndist, nnparent)
+                                    else
+                                        (ndist, nparent)
+                            ) (dists_u, parent_u) neighbours
+                    ) (dists, parent) (Graph.print graph)
+                    in
+                        _bellman_ford graph new_dists new_parent (ith_v+1) number_of_vertices
 
             let get_the_shortest_path graph starting_point =
                 _bellman_ford graph 

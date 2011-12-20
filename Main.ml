@@ -76,55 +76,55 @@ let main () =
 (* ========================================================================================= *)
 (* ===================================== TESTS ============================================= *)
 
-let dijkstra_test0 =
-    let graph = build_graph 
-    [1;2;3;4] 
-    [
-        (1, 2, 10, 1); 
-        (1, 3, 10, 3); 
-        (2, 3, 10, 1);
-        (2, 4, 10, 5); 
-        (3, 4, 10, 1); 
-    ] in
-    let (dists, parent) = DijkstraAlgorithm.get_the_shortest_path graph 1 in
-    let dist_to_last = IntAvlMap.get_keys_value dists (IntAvlMap.get_max_key dists) in
-    assert (dist_to_last == 3);;
+let tests = [
+    (
+        [1;2;3;4],
+        [
+            (1, 2, 10, 1); 
+            (1, 3, 10, 3); 
+            (2, 3, 10, 1);
+            (2, 4, 10, 5); 
+            (3, 4, 10, 1); 
+        ], 3
+    );
+    (
+        [1;2;3;4],
+        [
+            (1, 2, 10, 1); 
+            (1, 3, 10, 3); 
+            (2, 3, 10, 1);
+            (2, 4, 10, 5); 
+            (3, 4, 10, 1); 
+            (1, 4, 10, 2)
+        ], 2
+    );
+    (
+        [1;2;3;4;5],
+        [
+            (1, 2, 10, 1); 
+            (2, 3, 10, 1); 
+            (3, 5, 10, 1);
+            (1, 5, 10, 3); 
+            (1, 4, 10, 1); 
+            (4, 5, 10, 1); 
+            (2, 4, 10, 1);
+            (3, 4, 10, 1)
+        ], 2
+    )]
 
-let dijkstra_test1 =
-    let graph = build_graph 
-    [1;2;3;4] 
-    [
-        (1, 2, 10, 1); 
-        (1, 3, 10, 3); 
-        (2, 3, 10, 1);
-        (2, 4, 10, 5); 
-        (3, 4, 10, 1); 
-        (1, 4, 10, 2)
-    ] in
-    let (dists, parent) = DijkstraAlgorithm.get_the_shortest_path graph 1 in
-    let dist_to_last = IntAvlMap.get_keys_value dists (IntAvlMap.get_max_key dists) in
-    assert (dist_to_last == 2);;
-
-let dijkstra_test2 =
-    let graph = build_graph 
-    [1;2;3;4;5] 
-    [
-        (1, 2, 10, 1); 
-        (2, 3, 10, 1); 
-        (3, 5, 10, 1);
-        (1, 5, 10, 3); 
-        (1, 4, 10, 1); 
-        (4, 5, 10, 1); 
-        (2, 4, 10, 1);
-        (3, 4, 10, 1)
-    ] in
-    let (dists, parent) = DijkstraAlgorithm.get_the_shortest_path graph 1 in
-    let dist_to_last = IntAvlMap.get_keys_value dists (IntAvlMap.get_max_key dists) in
-    (*printf "Parents:\n";
-    List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print parent);
-    printf "\nDists:\n";
-    List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print dists);*)
-    assert (dist_to_last == 2);;
+let test_shortest_paths =
+    List.fold_left(
+        fun i (vertices, edges, correct_answer) ->
+            let graph = build_graph vertices edges in
+            let (dists_dij, parent_dij) = DijkstraAlgorithm.get_the_shortest_path graph 1 in
+            let dist_to_last_dij = IntAvlMap.get_keys_value dists_dij (IntAvlMap.get_max_key dists_dij) in
+            let (dists_bell, parent_bell) = BellmanFordAlgorithm.get_the_shortest_path graph 1 in
+            let dist_to_last_bell = IntAvlMap.get_keys_value dists_bell (IntAvlMap.get_max_key dists_bell) in
+                printf "Test %d: " i;
+                assert (dist_to_last_dij == correct_answer && dist_to_last_bell == correct_answer);
+                printf "OK\n";
+                (i+1)
+    ) 0 tests;;
 
 (*
 let test_avl1 () =
