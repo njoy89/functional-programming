@@ -15,6 +15,7 @@ module DIJKSTRA : functor(Queue : PRIORITY_QUEUE) -> SHORTEST_PATH_FINDER =
             module IntIntAvlMap = AvlMap(IntIntOrderTuple)
             module Graph = AvlMap(IntIntListOrderTuple)
 
+            (* it is an auxiliary method used below *)
             let _prepare_map graph starting_point sp nsp = 
                 let graph_dump = Graph.print graph in
                 let new_map = 
@@ -24,15 +25,19 @@ module DIJKSTRA : functor(Queue : PRIORITY_QUEUE) -> SHORTEST_PATH_FINDER =
                 in
                     IntIntAvlMap.put new_map (starting_point, nsp)
             
+            (* d[starting_point]=0, d[v]=inf for v!=starting_point *)
             let _prepare_dists graph starting_point = 
                 _prepare_map graph starting_point inf 0 
 
+            (* parent[v]=-1 for all veV *)
             let _prepare_parent graph starting_point = 
                 _prepare_map graph starting_point (-1) (-1)
 
+            (* at the very beginning, only one vertex waits to process *)
             let _prepare_queue starting_point = 
                 IntIntAvl.insert_element IntIntAvl.get_empty_queue (0, starting_point)
 
+            (* dijkstra algorithm, it process each vertex *)
             let rec _dijkstra graph queue dists parent =
                 if IntIntAvl.is_empty queue then
                     (dists, parent)
@@ -69,6 +74,7 @@ module BELLMAN_FORD : SHORTEST_PATH_FINDER =
             module IntIntAvlMap = AvlMap(IntIntOrderTuple)
             module Graph = AvlMap(IntIntListOrderTuple)
 
+            (* it is an auxiliary method used below *)
             let _prepare_map graph starting_point sp nsp = 
                 let graph_dump = Graph.print graph in
                 let new_map = 
@@ -78,12 +84,15 @@ module BELLMAN_FORD : SHORTEST_PATH_FINDER =
                 in
                     IntIntAvlMap.put new_map (starting_point, nsp)
             
+            (* d[starting_point]=0, d[v]=inf for v!=starting_point *)
             let _prepare_dists graph starting_point = 
                 _prepare_map graph starting_point inf 0 
 
+            (* parent[v]=-1 for all veV *)
             let _prepare_parent graph starting_point = 
                 _prepare_map graph starting_point (-1) (-1)
 
+            (* Bellman Ford Algorithm. it is called |V|-1 times for each edge. *) 
             let rec _bellman_ford graph dists parent ith_v number_of_vertices =
                 if ith_v == number_of_vertices then
                     (dists, parent)

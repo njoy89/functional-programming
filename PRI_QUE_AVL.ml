@@ -30,12 +30,14 @@ module AVL : PRIORITY_QUEUE = functor (Order : LINEAR_ORDER) ->
 
         type nodes_value_type = Order.t
 
+        (* type of a node in the queue *)
         type queue = 
             Empty |
             Node of (nodes_value_type * queue * queue * int)
 
         let is_empty tree = (tree == Empty)
 
+        (* it returns an empty queue, must be used frequently *)
         let get_empty_queue = Empty
 
         let rec get_min_element tree = 
@@ -50,6 +52,8 @@ module AVL : PRIORITY_QUEUE = functor (Order : LINEAR_ORDER) ->
                 Node(_, _, r, _)     -> get_max_element r |
                 Empty                -> raise Undefined
 
+        (* it finds a given element in the queue. if it doesn't exists, it returns Empty. *)
+        (* _find_key : queue -> first_cord_type -> queue *)
         let rec _find_element tree key =
             match tree with 
                 Empty            -> Empty |
@@ -60,6 +64,7 @@ module AVL : PRIORITY_QUEUE = functor (Order : LINEAR_ORDER) ->
                                     else
                                         _find_element l key
 
+        (* it checks whether exists a given element in the queue *)
         let is_element_a_member tree key =
             not (_find_element tree key == Empty)
 
@@ -71,6 +76,7 @@ module AVL : PRIORITY_QUEUE = functor (Order : LINEAR_ORDER) ->
         let _make_node key left right =
             Node(key, left, right, (max (_height left) (_height right)) + 1)
 
+        (* it restores the AVL tree order (uses rotations) *)
         let rec _balance key l r =
             let hl = _height l in
             let hr = _height r in
@@ -99,6 +105,8 @@ module AVL : PRIORITY_QUEUE = functor (Order : LINEAR_ORDER) ->
             else
                 _make_node key l r
 
+        (* it is called only if a given element doesn't exist in the queue - as opposed to put method
+         * in MAP *)
         let rec _insert_auxiliary tree key =
             match tree with
                 Empty            -> Node(key, Empty, Empty, 1) |
@@ -115,6 +123,7 @@ module AVL : PRIORITY_QUEUE = functor (Order : LINEAR_ORDER) ->
             else
                 _insert_auxiliary tree key
 
+        (* useful method, it inserts a list of elements into the queue *)
         let rec insert_list_of_elements tree keys =
             match keys with
                 [] -> tree |
@@ -124,6 +133,7 @@ module AVL : PRIORITY_QUEUE = functor (Order : LINEAR_ORDER) ->
                     else
                         insert_list_of_elements (insert_element tree h) t
 
+        (* it removes a given elemeent. it cares for restore the AVL order as well *)
         let rec _remove_auxiliary tree key = 
             match tree with
                 Empty -> tree |
@@ -146,6 +156,7 @@ module AVL : PRIORITY_QUEUE = functor (Order : LINEAR_ORDER) ->
                         let new_l = _remove_auxiliary l key in
                             _balance k new_l r
 
+        (* it removes a given element. it doesn't require the queue to store it *)
         let remove_element tree key =
             if not (is_element_a_member tree key) then
                 tree

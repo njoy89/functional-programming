@@ -24,6 +24,7 @@ module MAX_FLOW_MIN_COST =
             module DijkstraAlgorithm = Dijkstra(AvlMap);;
             module BellmanFordAlgorithm = BellmanFord(AvlMap);;
             
+            (* for each edge set flow that flow through this edge equaled to 0 *)
             let _init_flow flow graph = 
                 let graph_dump = Graph.print graph in
                     List.fold_left(
@@ -34,14 +35,15 @@ module MAX_FLOW_MIN_COST =
                             ) nflow value_list
                     ) flow graph_dump 
 
-            (* aktualizacja potencjalow o odleglosc a_pi obliczona alg. Dijkstry *)
+            (* it actualizes potential values taking into account distances a_pi computed in
+             * Dijkstra algorithm *)
             let _actualize_potentials potentials dists =
                 List.fold_left(
                     fun npotentials ((k, v), _, _) ->
                         IntIntAvlMap.put npotentials (k, v + IntIntAvlMap.get_keys_value dists k)
                 ) IntIntAvlMap.get_empty_map (IntIntAvlMap.print potentials)
 
-            (* aktualizacja kosztow krawedzi w grafie o nowy potencjal *)
+            (* it actualizes cost of edges taking into accound a new potentials value*)
             let _actualize_graph graph potentials = 
                 let graph_dump = Graph.print graph in
                     List.fold_left(
@@ -55,6 +57,7 @@ module MAX_FLOW_MIN_COST =
                             ) ngraph value_list
                     ) Graph.get_empty_map graph_dump
 
+            (* before the extending f over found path, find the minimal capacity of edge belonging to this path *)
             let _get_min_cap_over_path graph parent =
                  let graph_dump = Graph.print graph in
                     List.fold_left(
@@ -69,6 +72,7 @@ module MAX_FLOW_MIN_COST =
                             ) mcap neight_u
                     ) inf graph_dump
 
+            (* it extends the flow over found path *)
             let _extend_flow graph flow parent dists add_flow =
                 let graph_dump = Graph.print graph in
                     List.fold_left(
@@ -100,6 +104,7 @@ module MAX_FLOW_MIN_COST =
                             ) act_cost neight_u
                     ) 0 graph_dump
 
+            (* it is called whenever the extending path exists *)
             let rec _main_loop graph flow potentials s t = 
                 let new_graph = _actualize_graph graph potentials in
                 let (dists, parent) = DijkstraAlgorithm.get_the_shortest_path new_graph s in

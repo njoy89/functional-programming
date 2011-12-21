@@ -1,14 +1,18 @@
 
+(* an infinity value, used in Dijkstra algorithm *)
 let inf = 1000000000;;
 
+(* result of below comparitions *)
 type comparison = LOWER | EQUAL | GREATER;;
 
+(* used in AVL tree *)
 module type LINEAR_ORDER = 
     sig
         type t
         val compare : t -> t -> comparison
     end;;
 
+(* used in MAP, ft=key's type, st=value's type *)
 module type LINEAR_ORDER_TUPLE = 
     sig
         type ft
@@ -28,6 +32,7 @@ module IntOrder =
                 GREATER
     end;;
 
+(* used in PriorityQueue in Dijkstra algorithm *)
 module IntIntOrder =
     struct
         type t = int * int
@@ -44,7 +49,8 @@ module IntIntOrder =
             else
                 GREATER
     end;;
-  
+ 
+(* it is used each time whenever we want to create simple array *)
 module IntIntOrderTuple = 
     struct
         type ft = int
@@ -58,6 +64,7 @@ module IntIntOrderTuple =
                 GREATER
     end;;
 
+(* it is used in graph representation *)
 module IntIntListOrderTuple = 
     struct
         type ft = int
@@ -70,7 +77,9 @@ module IntIntListOrderTuple =
             else
                 GREATER
     end;;
-    
+   
+(* it is used in a data structure that store the flow - i.e. flow[e] = f where 
+ * e is en edge and f is a flow that flow through this edge *)
 module IntIntIntResNetOrderTuple =
     struct
         type ft = (int * int)

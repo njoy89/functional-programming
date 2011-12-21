@@ -32,12 +32,14 @@ module type MAP = functor(Order : LINEAR_ORDER_TUPLE) ->
  * auxiliary methods. *)
 module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
     struct
+        (* this exception is raised when there is a wrong access to non-existing node *)
         exception Undefined
 
         type first_cord_type = Order.ft
         type second_cord_type = Order.st
-        type tuple_type = first_cord_type * second_cord_type
+        type tuple_type = first_cord_type * second_cord_type (* (key, value) *)
 
+        (* type of a node in the map *)
         type map = 
             Empty |
             Node of (tuple_type * map * map * int * int)
@@ -45,6 +47,7 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
 
         let is_empty map = (map == Empty)
 
+        (* it returns an empty map, must be used frequently *)
         let get_empty_map = Empty
 
         let rec get_min_key map = 
@@ -60,6 +63,8 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
                 Empty                        -> raise Undefined
 
 
+        (* it returns value of node whose key equals to a given value. there must exist such node
+           in the map! otherwise, the exception will be raised *)
         let rec get_keys_value map key =
             match map with 
                 Empty                    -> raise Undefined |
@@ -70,6 +75,7 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
                                             else
                                                 get_keys_value l key
 
+        (* it finds node that has a given key. if it doesn't exists, it returns Empty. *)
         (* _find_key : map -> first_cord_type -> map *)
         let rec _find_key map key =
             match map with 
@@ -81,6 +87,7 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
                                             else
                                                 _find_key l key
 
+        (* it checks whether exists a given key *)
         let is_key_a_member map key =
             not (_find_key map key == Empty)
 
@@ -100,6 +107,7 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
                 (get_size l) + (get_size r) + 1
             )
 
+        (* it restores the AVL tree order (uses rotations) *)
         let rec _balance tup l r =
             let hl = _height l in
             let hr = _height r in
@@ -111,7 +119,7 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
                                             _make_node ltup ll (_make_node tup lr r)
                                         else
                                             match lr with
-                                                Empty                 -> assert false |
+                                                Empty                    -> assert false |
                                                 Node(rk, lrl, lrr, _, _) ->
                                                     _make_node rk (_make_node ltup ll lrl) 
                                                         (_make_node tup lrr r)
@@ -130,6 +138,8 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
             else
                 _make_node tup l r
 
+        (* note: if node whose key equals to given key exists, this procedure changes its value,
+         * as opposed to insert_element in queue *)
         let rec _put_auxiliary map (key, value) =
             match map with
                 Empty                    -> Node((key, value), Empty, Empty, 1, 1) |
@@ -145,6 +155,7 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
         let put map t =
             _put_auxiliary map t
 
+        (* useful method, it inserts a list of (key, value) into the map *)
         let rec put_list_of_keys map keys =
             match keys with
                 []          -> map |
@@ -154,6 +165,7 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
                         else
                             put_list_of_keys (put map (k, v)) t
 
+        (* it removes node whose key equals to a given key. it cares for restore the AVL order as well *)
         let rec _remove_auxiliary map key = 
             match map with
                 Empty                    -> map |
@@ -176,6 +188,8 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
                             let new_l = _remove_auxiliary l key in
                                 _balance (k, v) new_l r
 
+        (* it removes node whose key equals to a given key. it doesn't require the map
+           to store it *)
         let remove map key =
             if not (is_key_a_member map key) then
                 map
