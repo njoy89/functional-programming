@@ -1,12 +1,4 @@
 
-type comparison = LOWER | EQUAL | GREATER;;
-
-module type LINEAR_ORDER = 
-    sig
-        type t
-        val compare : t -> t -> comparison
-    end;;
-
 module type PRIORITY_QUEUE = functor(Order : LINEAR_ORDER) -> 
     sig
         exception Undefined
@@ -174,34 +166,4 @@ module AVL : PRIORITY_QUEUE = functor (Order : LINEAR_ORDER) ->
             match tree with
                 Empty -> [] |
                 Node(k, l, r, h) -> print l @ [(k, h)] @ print r
-    end;;
-    
-
-module IntOrder = 
-    struct
-        type t = int
-        let compare (x:int) (y:int) =
-            if x < y then
-                LOWER
-            else if x == y then
-                EQUAL
-            else
-                GREATER
-    end;;
-
-module IntIntOrder =
-    struct
-        type t = int * int
-        let compare ((x1, x2) : t) ((y1, y2) : t) =
-            if x1 < y1 then
-                LOWER
-            else if x1 == y1 then
-                if x2 < y2 then
-                    LOWER
-                else if x2 == y2 then
-                    EQUAL
-                else
-                    GREATER
-            else
-                GREATER
     end;;

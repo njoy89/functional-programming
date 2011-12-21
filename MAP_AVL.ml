@@ -1,9 +1,3 @@
-module type LINEAR_ORDER_TUPLE = 
-    sig
-        type ft
-        type st
-        val compare : ft -> ft -> comparison
-    end;;
 
 module type MAP = functor(Order : LINEAR_ORDER_TUPLE) -> 
     sig
@@ -204,29 +198,3 @@ module AVL_MAP : MAP = functor (Order : LINEAR_ORDER_TUPLE) ->
                 Node((k, v), l, r, h, s) -> print l @ [((k, v), h, s)] @ print r
     end;;
     
-
-module IntIntOrderTuple = 
-    struct
-        type ft = int
-        type st = int
-        let compare (x:ft) (y:ft) =
-            if x < y then
-                LOWER
-            else if x == y then
-                EQUAL
-            else
-                GREATER
-    end;;
-
-module IntIntListOrderTuple = 
-    struct
-        type ft = int
-        type st = (int * int * int) list
-        let compare (x:ft) (y:ft) =
-            if x < y then
-                LOWER
-            else if x == y then
-                EQUAL
-            else
-                GREATER
-    end;;

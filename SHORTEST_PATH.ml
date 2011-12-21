@@ -1,6 +1,4 @@
 
-let inf = 1000000000;;
-
 module type SHORTEST_PATH_FINDER =  
     functor(AvlMap : MAP) ->
         sig

@@ -1,6 +1,8 @@
+#use "Common.ml";;
 #use "PRI_QUE_AVL.ml";;
 #use "MAP_AVL.ml";;
 #use "SHORTEST_PATH.ml";;
+#use "MAX_FLOW_MIN_COST.ml";;
 
 open Scanf;;
 open Printf;;
@@ -10,6 +12,8 @@ module IntAvl = AVL(IntOrder);;
 module IntAvlMap = AVL_MAP(IntIntOrderTuple);;
 module DijkstraAlgorithm = DIJKSTRA(AVL)(AVL_MAP);;
 module BellmanFordAlgorithm = BELLMAN_FORD(AVL_MAP);;
+module MaxFlowMinCost = MAX_FLOW_MIN_COST(AVL_MAP)(DIJKSTRA(AVL))(BELLMAN_FORD);;
+module ResuidalNetwork = AVL_MAP(IntIntIntResNetOrderTuple);;
 
 let build_graph nodes edges =
     let graph_first_step = 
@@ -127,7 +131,22 @@ let tests = [
             (5, 6, 10, 2);
             (2, 3, 10, 1);
         ], 5
-    )]
+    );
+    (
+        [1;2;3;4;5;6],
+        [
+            (1, 2, 4, 1);
+            (1, 3, 10, 1);
+            (2, 3, 6, 1);
+            (3, 4, 9, 1);
+            (4, 3, 5, 1);
+            (2, 5, 3, 1);
+            (5, 4, 5, 1);
+            (4, 6, 7, 1);
+            (5, 6, 10, 1);
+        ], 3
+    )
+    ]
 
 let test_shortest_paths =
     List.fold_left(
@@ -137,6 +156,7 @@ let test_shortest_paths =
             let dist_to_last_dij = IntAvlMap.get_keys_value dists_dij (IntAvlMap.get_max_key dists_dij) in
             let (dists_bell, parent_bell) = BellmanFordAlgorithm.get_the_shortest_path graph 1 in
             let dist_to_last_bell = IntAvlMap.get_keys_value dists_bell (IntAvlMap.get_max_key dists_bell) in
+(*            let (cap, cost, res_network) = MaxFlowMinCost.get_max_flow_min_cost graph 1 (GraphIntIntList.get_max_key graph) in*)
                 (*printf "Parent:\n";
                 List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print parent_dij);
                 printf "\nDists:\n";
@@ -146,6 +166,13 @@ let test_shortest_paths =
                 printf "OK\n";
                 (i+1)
     ) 1 tests;;
+
+(*let (cap, cost, res_net) = *)
+let test_max_flow_min_cost = 
+    let (nodes, edges, correct_answer) = (List.nth tests 4) in
+    let graph = build_graph nodes edges in
+    let (cap, cost, res_net) = MaxFlowMinCost.get_max_flow_min_cost graph 1 6 in
+        (cap, cost, ResuidalNetwork.print res_net);;
 
 (*
 let test_avl1 () =
