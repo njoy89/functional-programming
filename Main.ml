@@ -15,6 +15,7 @@ module BellmanFordAlgorithm = BELLMAN_FORD(AVL_MAP);;
 module MaxFlowMinCost = MAX_FLOW_MIN_COST(AVL_MAP)(DIJKSTRA(AVL))(BELLMAN_FORD);;
 module ResuidalNetwork = AVL_MAP(IntIntIntResNetOrderTuple);;
 
+(* it gets list of nodes and edges, then returns a graph's structure *)
 let build_graph nodes edges =
     let graph_first_step = 
         List.fold_left(
@@ -64,17 +65,13 @@ let main () =
         Printf.printf "\nn=%d m=%d\n" !n !m;
         List.iter (fun (a, b, cap, cost) -> printf "%d %d %d %d\n" a b cap cost) !edges;
 
-        (*
         let graph = build_graph !nodes !edges in
-        let (dists, parent) = DijkstraAlgorithm.get_the_shortest_path graph 1 in
+        let (flow_value, flow_cost, flow) = MaxFlowMinCost.get_max_flow_min_cost graph 1 !n in
         begin
             print_graph graph;
-            printf "Parent:\n";
-            List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print parent);
-            printf "\nDists:\n";
-            List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print dists);
-        end;;
-        *)
+            printf "flow_value=%d    flow_cost=%d\n" flow_value flow_cost;
+            (*ResuidalNetwork.print flow;*)
+        end;
         ()
 
 (* ========================================================================================= *)

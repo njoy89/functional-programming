@@ -43,18 +43,25 @@ module MAX_FLOW_MIN_COST =
                         IntIntAvlMap.put npotentials (k, v + IntIntAvlMap.get_keys_value dists k)
                 ) IntIntAvlMap.get_empty_map (IntIntAvlMap.print potentials)
 
-            (* it actualizes cost of edges taking into accound a new potentials value*)
+            (* it actualizes cost of edges taking into accound a new potentials value.
+               result: new graph *)
             let _actualize_graph graph potentials = 
                 let graph_dump = Graph.print graph in
                     List.fold_left(
                         fun ngraph ((u, value_list), _, _) ->
+                            let nngraph = 
+                                if Graph.is_key_a_member ngraph u then
+                                    ngraph
+                                else
+                                    Graph.put ngraph (u, [])
+                            in
                             List.fold_left(
                                 fun nngraph (v, cap, cost) ->
-                                    if not (Graph.is_key_a_member nngraph u) then
-                                        Graph.put nngraph (u, [(v, cap, cost)])
-                                    else
-                                        Graph.put nngraph (u, (v, cap, cost)::(Graph.get_keys_value nngraph u))
-                            ) ngraph value_list
+                                    let add_num = (IntIntAvlMap.get_keys_value potentials u) 
+                                        - (IntIntAvlMap.get_keys_value potentials v)
+                                    in
+                                        Graph.put nngraph (u, (v, cap, cost + add_num)::(Graph.get_keys_value nngraph u))
+                            ) nngraph value_list
                     ) Graph.get_empty_map graph_dump
 
             (* before the extending f over found path, find the minimal capacity of edge belonging to this path *)
@@ -104,10 +111,33 @@ module MAX_FLOW_MIN_COST =
                             ) act_cost neight_u
                     ) 0 graph_dump
 
+            let _get_tmp_graph_without_sated_edges graph flow =
+                let graph_dump = Graph.print graph in
+                    List.fold_left(
+                        fun ngraph ((u, value_list), _, _) ->
+                            let nngraph = 
+                                if Graph.is_key_a_member ngraph u then
+                                    ngraph
+                                else
+                                    Graph.put ngraph (u, [])
+                            in
+                            List.fold_left(
+                                fun nngraph (v, cap, cost) ->
+                                    if cap < ResuidalNetwork.get_keys_value flow (u, v) then
+                                        nngraph
+                                    else
+                                        if not (Graph.is_key_a_member nngraph u) then
+                                            Graph.put nngraph (u, [(v, cap, cost)])
+                                        else
+                                            Graph.put nngraph (u, (v, cap, cost)::(Graph.get_keys_value nngraph u))
+                            ) nngraph value_list
+                    ) Graph.get_empty_map graph_dump
+
             (* it is called whenever the extending path exists *)
             let rec _main_loop graph flow potentials s t = 
                 let new_graph = _actualize_graph graph potentials in
-                let (dists, parent) = DijkstraAlgorithm.get_the_shortest_path new_graph s in
+                let tmp_graph = _get_tmp_graph_without_sated_edges graph flow in
+                let (dists, parent) = DijkstraAlgorithm.get_the_shortest_path tmp_graph s in
                     if (IntIntAvlMap.get_keys_value dists t) == inf then
                         let max_flow_value = _get_flow_value new_graph flow s in
                         let max_flow_cost = _get_flow_cost new_graph flow in
