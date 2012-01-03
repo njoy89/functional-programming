@@ -66,7 +66,7 @@ let main () =
         List.iter (fun (a, b, cap, cost) -> printf "%d %d %d %d\n" a b cap cost) !edges;
 
         let graph = build_graph !nodes !edges in
-        let (flow_value, flow_cost, flow) = MaxFlowMinCost.get_max_flow_min_cost graph 1 !n in
+        let (flow_value, flow_cost, flow, res_net) = MaxFlowMinCost.get_max_flow_min_cost graph 1 !n in
         begin
             print_graph graph;
             printf "flow_value=%d    flow_cost=%d\n" flow_value flow_cost;
@@ -134,7 +134,7 @@ let tests = [
         [
             (1, 2, 4, 1);
             (1, 3, 10, 1);
-            (2, 3, 6, 1);
+            (2, 4, 6, 1);
             (3, 4, 9, 1);
             (4, 3, 5, 1);
             (2, 5, 3, 1);
@@ -168,8 +168,8 @@ let test_shortest_paths =
 let test_max_flow_min_cost = 
     let (nodes, edges, correct_answer) = (List.nth tests 4) in
     let graph = build_graph nodes edges in
-    let (cap, cost, res_net) = MaxFlowMinCost.get_max_flow_min_cost graph 1 6 in
-        (cap, cost, ResuidalNetwork.print res_net);;
+    let (cap, cost, flow, res_net) = MaxFlowMinCost.get_max_flow_min_cost graph 1 6 in
+        (cap, cost, ResuidalNetwork.print flow, GraphIntIntList.print res_net);;
 
 (*
 let test_avl1 () =

@@ -78,8 +78,6 @@ module IntIntListOrderTuple =
                 GREATER
     end;;
    
-(* it is used in a data structure that store the flow - i.e. flow[e] = f where 
- * e is en edge and f is a flow that flow through this edge *)
 module IntIntIntResNetOrderTuple =
     struct
         type ft = (int * int)
@@ -92,6 +90,32 @@ module IntIntIntResNetOrderTuple =
                     LOWER
                 else if y1 == y2 then
                     EQUAL
+                else
+                    GREATER
+            else
+                GREATER
+    end;;    
+
+(* it is used in a data structure that store the flow - i.e. flow[(u, v, cost)] = f where 
+ * e=(u,v) is en edge with cost "cost" and f is a flow that flow through this edge *)
+module IntIntIntIntResNetOrderTuple =
+    struct
+        (* (u * v * cost) *)
+        type ft = (int * int * int)
+        type st = int
+        let compare ((u1, v1, c1):ft) ((u2, v2, c2):ft) =
+            if u1 < u2 then
+                LOWER
+            else if u1 == u2 then
+                if v1 < v2 then
+                    LOWER
+                else if v1 == v2 then
+                    if c1 < c2 then
+                        LOWER
+                    else if c1 == c2 then
+                        EQUAL
+                    else
+                        GREATER
                 else
                     GREATER
             else
