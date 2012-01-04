@@ -42,6 +42,7 @@ module MAX_FLOW_MIN_COST =
                         ) nflow neight_u
                 ) ResuidalNetwork.get_empty_map (Graph.print graph)
 
+            (* construct initial resuidal network *)
             let _make_res_network graph = 
                 List.fold_left(
                     fun nres_net ((u, neight_u), _, _) ->
@@ -181,17 +182,6 @@ module MAX_FLOW_MIN_COST =
                             act_flow_value + (_get_flow flow (s, v))
                     ) 0 neight_s
 
-            (* counts overall flow cost *)
-            let _get_flow_cost graph flow =
-                List.fold_left(
-                    fun ncost ((u, neight_u), _, _) ->
-                        List.fold_left(
-                            fun nncost (v, cap, cost) ->
-                                nncost + cost * (_get_flow flow (u, v))
-                        ) ncost neight_u
-                ) 0 (Graph.print graph)
-
-
             (* it is called whenever the extending path exists *)
             let rec _main_loop graph res_network flow potentials max_flow_cost s t i = 
                 let res_network_with_updated_costs = _update_costs_in_resuidal_network res_network potentials in
@@ -199,7 +189,6 @@ module MAX_FLOW_MIN_COST =
                     if (_get_int_value dists t) == inf || i == 0 then
                         (* extending path doesn't exist *)
                         let max_flow_value = _get_flow_value graph flow s in
-                        (*let max_flow_cost = _get_flow_cost graph flow in*)
                             (max_flow_value, max_flow_cost, flow, res_network)
                     else
                         let min_cap_over_path = _get_min_cap_over_path res_network_with_updated_costs parent s t in
@@ -213,5 +202,5 @@ module MAX_FLOW_MIN_COST =
                 let flow = _get_init_flow graph in
                 let res_network = _make_res_network graph in
                 let (potentials, parent) = BellmanFordAlgorithm.get_the_shortest_path graph s in
-                    _main_loop graph res_network flow potentials 0 s t 1000000
+                    _main_loop graph res_network flow potentials 0 s t inf
         end;;
