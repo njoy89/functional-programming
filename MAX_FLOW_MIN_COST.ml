@@ -121,6 +121,7 @@ module MAX_FLOW_MIN_COST =
                     List.fold_left(
                         fun nflow ((u, v), cap) ->
                             let nnflow = 
+                                (* TODO!!!!!!!!!!!!!!!!!!! *)
                                 ResuidalNetwork.put nflow ((u, v), (_get_flow nflow (u, v)) + add_flow) in
                                 ResuidalNetwork.put nnflow ((v, u), (_get_flow nflow (v, u)) - add_flow)
                     ) flow augment_path
@@ -202,7 +203,7 @@ module MAX_FLOW_MIN_COST =
                             (max_flow_value, max_flow_cost, flow, res_network)
                     else
                         let min_cap_over_path = _get_min_cap_over_path res_network_with_updated_costs parent s t in
-                        let new_flow = _extend_flow graph flow parent min_cap_over_path s t in
+                        let new_flow = _extend_flow res_network_with_updated_costs flow parent min_cap_over_path s t in
                         let new_res_network = _update_resuidal_network graph res_network_with_updated_costs new_flow in
                         let new_potentials = _actualize_potentials potentials dists in
                             _main_loop graph new_res_network new_flow new_potentials s t (i-1)

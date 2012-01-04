@@ -88,7 +88,6 @@ let tests = [
             (3, 4, 10, 1); 
         ], 3, 20, 100, 1, 4
     );
-    (*
     (
         [1;2;3;4],
         [
@@ -98,8 +97,9 @@ let tests = [
             (2, 4, 10, 5); 
             (3, 4, 10, 1); 
             (1, 4, 10, 2)
-        ], 2
+        ], 2, 30, 120, 1, 4
     );
+    (*
     (
         [1;2;3;4;5],
         [
@@ -130,6 +130,7 @@ let tests = [
             (2, 3, 10, 1);
         ], 5
     );
+    *)
     (
         [1;2;3;4;5;6],
         [
@@ -137,14 +138,13 @@ let tests = [
             (1, 3, 10, 1);
             (2, 4, 6, 1);
             (3, 4, 9, 1);
-            (4, 3, 5, 1);
+            (*(4, 3, 5, 1);*)
             (2, 5, 3, 1);
             (5, 4, 5, 1);
             (4, 6, 7, 1);
             (5, 6, 10, 1);
-        ], 3, 10, 33
+        ], 3, 10, 30, 1, 6
     )
-    *)
     ]
 
 let test_shortest_paths =
@@ -160,10 +160,10 @@ let test_shortest_paths =
                 List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print parent_dij);
                 printf "\nDists:\n";
                 List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print dists_dij);*)
-                printf "Test %d: " i;
+                printf "Test %d:\n" i;
                 assert (dist_to_last_dij == min_dist && dist_to_last_bell == min_dist);
-                (*assert (cap == max_flow); 
-                assert (cost == min_cost_max_flow);*)
+                assert (cap == max_flow); 
+                assert (cost == min_cost_max_flow);
                 
                 printf "flow: \n";
                 List.iter(
@@ -171,13 +171,13 @@ let test_shortest_paths =
                         printf "(%d, %d) -> %d\n" u v u_v_flow
                 ) (ResuidalNetwork.print flow);
 
-                printf "OK\n";
+                printf "RESULT: OK\n\n";
                 (i+1)
     ) 1 tests;;
 
 (*let (cap, cost, res_net) = *)
 let test_max_flow_min_cost = 
-    let which_test = 0 in
+    let which_test = 2 in
     let (nodes, edges, min_dist, max_flow, min_cost_max_flow, s, t) = (List.nth tests which_test) in
     let graph = build_graph nodes edges in
     let (cap, cost, flow, res_net) = MaxFlowMinCost.get_max_flow_min_cost graph s t in
