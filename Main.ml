@@ -86,8 +86,9 @@ let tests = [
             (2, 3, 10, 1);
             (2, 4, 10, 5); 
             (3, 4, 10, 1); 
-        ], 3
+        ], 3, 20, 100, 1, 4
     );
+    (*
     (
         [1;2;3;4],
         [
@@ -141,34 +142,45 @@ let tests = [
             (5, 4, 5, 1);
             (4, 6, 7, 1);
             (5, 6, 10, 1);
-        ], 3
+        ], 3, 10, 33
     )
+    *)
     ]
 
 let test_shortest_paths =
     List.fold_left(
-        fun i (vertices, edges, correct_answer) ->
+        fun i (vertices, edges, min_dist, max_flow, min_cost_max_flow, s, t) ->
             let graph = build_graph vertices edges in
-            let (dists_dij, parent_dij) = DijkstraAlgorithm.get_the_shortest_path graph 1 in
+            let (dists_dij, parent_dij) = DijkstraAlgorithm.get_the_shortest_path graph s in
             let dist_to_last_dij = IntAvlMap.get_keys_value dists_dij (IntAvlMap.get_max_key dists_dij) in
-            let (dists_bell, parent_bell) = BellmanFordAlgorithm.get_the_shortest_path graph 1 in
+            let (dists_bell, parent_bell) = BellmanFordAlgorithm.get_the_shortest_path graph s in
             let dist_to_last_bell = IntAvlMap.get_keys_value dists_bell (IntAvlMap.get_max_key dists_bell) in
-(*            let (cap, cost, res_network) = MaxFlowMinCost.get_max_flow_min_cost graph 1 (GraphIntIntList.get_max_key graph) in*)
+            let (cap, cost, flow, res_net) = MaxFlowMinCost.get_max_flow_min_cost graph s t in
                 (*printf "Parent:\n";
                 List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print parent_dij);
                 printf "\nDists:\n";
                 List.iter (fun ((k, v), h, s) -> printf "(%d, %d) h=%d s=%d\n" k v h s) (IntAvlMap.print dists_dij);*)
                 printf "Test %d: " i;
-                assert (dist_to_last_dij == correct_answer && dist_to_last_bell == correct_answer);
+                assert (dist_to_last_dij == min_dist && dist_to_last_bell == min_dist);
+                (*assert (cap == max_flow); 
+                assert (cost == min_cost_max_flow);*)
+                
+                printf "flow: \n";
+                List.iter(
+                    fun (((u, v), u_v_flow), _, _) ->
+                        printf "(%d, %d) -> %d\n" u v u_v_flow
+                ) (ResuidalNetwork.print flow);
+
                 printf "OK\n";
                 (i+1)
     ) 1 tests;;
 
 (*let (cap, cost, res_net) = *)
 let test_max_flow_min_cost = 
-    let (nodes, edges, correct_answer) = (List.nth tests 4) in
+    let which_test = 0 in
+    let (nodes, edges, min_dist, max_flow, min_cost_max_flow, s, t) = (List.nth tests which_test) in
     let graph = build_graph nodes edges in
-    let (cap, cost, flow, res_net) = MaxFlowMinCost.get_max_flow_min_cost graph 1 6 in
+    let (cap, cost, flow, res_net) = MaxFlowMinCost.get_max_flow_min_cost graph s t in
         (cap, cost, ResuidalNetwork.print flow, GraphIntIntList.print res_net);;
 
 (*

@@ -82,35 +82,48 @@ module MAX_FLOW_MIN_COST =
                         ) nnres_net neight_u
                 ) Graph.get_empty_map (Graph.print res_network)
 
-            (* before the extending f over found path, find the minimal capacity of edge belonging to this path *)
-            let _get_min_cap_over_path res_network parent =
-                List.fold_left(
-                    fun mcap ((u, neight_u), _, _) ->
+            (* get list of edges ((u, v), cap) that are contained in augment path *)
+            let _get_augment_path res_network parent s t =
+                let rec _get_simple_path simple_path parent v s =
+                    if v == s then
+                        simple_path
+                    else
+                        let u = IntIntAvlMap.get_keys_value parent v in
+                        let nsimple_path = ResuidalNetwork.put simple_path ((u, v), 0) in
+                            _get_simple_path nsimple_path parent u s
+                in
+                    let simple_path = _get_simple_path ResuidalNetwork.get_empty_map parent t s 
+                    in
                         List.fold_left(
-                            fun act_min_cap (v, cap, cost) ->
-                                let (pu, pv) = ((IntIntAvlMap.get_keys_value parent v), v) in
-                                    if u == pu && v == pv then
-                                        min act_min_cap cap
-                                    else
-                                        act_min_cap
-                        ) mcap neight_u
-                ) inf (Graph.print res_network)
+                            fun aug_path ((u, neight_u), _, _) ->
+                                List.fold_left(
+                                    fun naug_path (v, cap, cost) ->
+                                        if ResuidalNetwork.is_key_a_member simple_path (u, v) then
+                                            ((u, v), cap)::naug_path
+                                        else
+                                            naug_path
+                                ) aug_path neight_u
+                        ) [] (Graph.print res_network)
+
+            (* before the extending f over found path, find the minimal capacity of edge belonging to this path *)
+            let _get_min_cap_over_path res_network parent s t =
+                let augment_path = _get_augment_path res_network parent s t
+                in
+                    List.fold_left(
+                        fun min_cap ((u, v), cap) ->
+                            min min_cap cap
+                    ) inf augment_path
 
             (* it extends the flow over found path *)
-            (* TODO - do poprawy - rozwazam cale drzewo, a nie tylko sciezke od s to t *)
-            let _extend_flow graph flow parent add_flow s t =
-                List.fold_left(
-                    fun nflow ((u, neight_u), _, _) ->
-                        List.fold_left(
-                            fun nnflow (v, cap, cost) ->
-                                let (pu, pv) = ((IntIntAvlMap.get_keys_value parent v), v) in
-                                let to_add =
-                                    if u == pu && v == pv then add_flow
-                                    else 0
-                                in
-                                    ResuidalNetwork.put nnflow ((u, v), (_get_flow flow (u, v)) + to_add)
-                        ) nflow neight_u
-                ) ResuidalNetwork.get_empty_map (Graph.print graph)
+            let _extend_flow res_network flow parent add_flow s t =
+                let augment_path = _get_augment_path res_network parent s t
+                in
+                    List.fold_left(
+                        fun nflow ((u, v), cap) ->
+                            let nnflow = 
+                                ResuidalNetwork.put nflow ((u, v), (_get_flow nflow (u, v)) + add_flow) in
+                                ResuidalNetwork.put nnflow ((v, u), (_get_flow nflow (v, u)) - add_flow)
+                    ) flow augment_path
 
             (* it rebuild resuidal network after updating flow and updating edge costs *)
             let _update_resuidal_network graph res_network flow =
@@ -188,7 +201,7 @@ module MAX_FLOW_MIN_COST =
                         let max_flow_cost = _get_flow_cost graph flow in
                             (max_flow_value, max_flow_cost, flow, res_network)
                     else
-                        let min_cap_over_path = _get_min_cap_over_path res_network_with_updated_costs parent in
+                        let min_cap_over_path = _get_min_cap_over_path res_network_with_updated_costs parent s t in
                         let new_flow = _extend_flow graph flow parent min_cap_over_path s t in
                         let new_res_network = _update_resuidal_network graph res_network_with_updated_costs new_flow in
                         let new_potentials = _actualize_potentials potentials dists in
@@ -198,5 +211,5 @@ module MAX_FLOW_MIN_COST =
                 let flow = _get_init_flow graph in
                 let res_network = _make_res_network graph in
                 let (potentials, parent) = BellmanFordAlgorithm.get_the_shortest_path graph s in
-                    _main_loop graph res_network flow potentials s t 1
+                    _main_loop graph res_network flow potentials s t 100
         end;;
