@@ -99,7 +99,7 @@ module MAX_FLOW_MIN_COST =
                                 List.fold_left(
                                     fun naug_path (v, cap, cost) ->
                                         if ResuidalNetwork.is_key_a_member simple_path (u, v) then
-                                            ((u, v), cap)::naug_path
+                                            ((u, v), cap, cost)::naug_path
                                         else
                                             naug_path
                                 ) aug_path neight_u
@@ -110,21 +110,21 @@ module MAX_FLOW_MIN_COST =
                 let augment_path = _get_augment_path res_network parent s t
                 in
                     List.fold_left(
-                        fun min_cap ((u, v), cap) ->
+                        fun min_cap ((u, v), cap, _) ->
                             min min_cap cap
                     ) inf augment_path
 
             (* it extends the flow over found path *)
-            let _extend_flow res_network flow parent add_flow s t =
+            let _extend_flow res_network flow parent add_flow act_cost_max_flow s t =
                 let augment_path = _get_augment_path res_network parent s t
                 in
                     List.fold_left(
-                        fun nflow ((u, v), cap) ->
-                            let nnflow = 
-                                (* TODO!!!!!!!!!!!!!!!!!!! *)
-                                ResuidalNetwork.put nflow ((u, v), (_get_flow nflow (u, v)) + add_flow) in
-                                ResuidalNetwork.put nnflow ((v, u), (_get_flow nflow (v, u)) - add_flow)
-                    ) flow augment_path
+                        fun (nflow, ncost_max_flow) ((u, v), cap, cost) ->
+                            (
+                                ResuidalNetwork.put nflow ((u, v), (_get_flow nflow (u, v)) + add_flow), 
+                                ncost_max_flow + add_flow * cost
+                            )
+                    ) (flow, act_cost_max_flow) augment_path
 
             (* it rebuild resuidal network after updating flow and updating edge costs *)
             let _update_resuidal_network graph res_network flow =
@@ -193,24 +193,25 @@ module MAX_FLOW_MIN_COST =
 
 
             (* it is called whenever the extending path exists *)
-            let rec _main_loop graph res_network flow potentials s t i = 
+            let rec _main_loop graph res_network flow potentials max_flow_cost s t i = 
                 let res_network_with_updated_costs = _update_costs_in_resuidal_network res_network potentials in
                 let (dists, parent) = DijkstraAlgorithm.get_the_shortest_path res_network_with_updated_costs s in
                     if (_get_int_value dists t) == inf || i == 0 then
                         (* extending path doesn't exist *)
                         let max_flow_value = _get_flow_value graph flow s in
-                        let max_flow_cost = _get_flow_cost graph flow in
+                        (*let max_flow_cost = _get_flow_cost graph flow in*)
                             (max_flow_value, max_flow_cost, flow, res_network)
                     else
                         let min_cap_over_path = _get_min_cap_over_path res_network_with_updated_costs parent s t in
-                        let new_flow = _extend_flow res_network_with_updated_costs flow parent min_cap_over_path s t in
+                        let (new_flow, new_max_flow_cost) = 
+                            _extend_flow res_network flow parent min_cap_over_path max_flow_cost s t in
                         let new_res_network = _update_resuidal_network graph res_network_with_updated_costs new_flow in
                         let new_potentials = _actualize_potentials potentials dists in
-                            _main_loop graph new_res_network new_flow new_potentials s t (i-1)
+                            _main_loop graph new_res_network new_flow new_potentials new_max_flow_cost s t (i-1)
 
             let get_max_flow_min_cost graph s t = 
                 let flow = _get_init_flow graph in
                 let res_network = _make_res_network graph in
                 let (potentials, parent) = BellmanFordAlgorithm.get_the_shortest_path graph s in
-                    _main_loop graph res_network flow potentials s t 100
+                    _main_loop graph res_network flow potentials 0 s t 1000000
         end;;
