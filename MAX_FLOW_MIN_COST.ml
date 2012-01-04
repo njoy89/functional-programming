@@ -88,7 +88,7 @@ module MAX_FLOW_MIN_COST =
                     if v == s then
                         simple_path
                     else
-                        let u = IntIntAvlMap.get_keys_value parent v in
+                        let u = _get_int_value parent v in
                         let nsimple_path = ResuidalNetwork.put simple_path ((u, v), 0) in
                             _get_simple_path nsimple_path parent u s
                 in
